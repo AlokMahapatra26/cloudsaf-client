@@ -1,44 +1,3 @@
-// {'use client';
-
-// import { useAuth } from '@/context/AuthContext';
-// import Link from 'next/link';
-
-// export default function Home() {
-//     const { user, signOut } = useAuth();
-
-//     return (
-//         <main className="flex flex-col items-center justify-center min-h-screen p-24">
-//             <h1 className="text-4xl font-bold mb-8">Welcome to Your Drive</h1>
-
-//             {user ? (
-//                 <div className="text-center">
-//                     <p>You are signed in as: <strong>{user.email}</strong></p>
-//                     <button 
-//                         onClick={signOut} 
-//                         className="mt-4 px-4 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700"
-//                     >
-//                         Sign Out
-//                     </button>
-//                     {/* This is where your file/folder components will go! */}
-//                 </div>
-//             ) : (
-//                 <div className="text-center">
-//                     <p>Please sign in to continue.</p>
-//                     <div className="mt-4 space-x-4">
-//                         <Link href="/signin" className="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700">
-//                             Sign In
-//                         </Link>
-//                         <Link href="/signup" className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
-//                             Sign Up
-//                         </Link>
-//                     </div>
-//                 </div>
-//             )}
-//         </main>
-//     );
-// }}
-
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -52,11 +11,19 @@ interface DriveItem {
     name: string;
     type: 'file' | 'folder';
     parent_id: string | null;
+    storage_path: string | null;
 }
 
 interface Breadcrumb {
     id: string | null;
     name: string;
+}
+
+interface ContextMenu {
+    visible: boolean;
+    x: number;
+    y: number;
+    item: DriveItem | null;
 }
 
 export default function Home() {
@@ -66,6 +33,9 @@ export default function Home() {
     const [isUploading, setIsUploading] = useState(false);
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
     const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([{ id: null, name: 'My Drive' }]);
+
+    const [contextMenu, setContextMenu] = useState<ContextMenu>({ visible: false, x: 0, y: 0, item: null });
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Function to fetch files and folders
@@ -101,6 +71,13 @@ export default function Home() {
             fetchItems(currentFolderId);
         }
     }, [session, currentFolderId]);
+
+    // Close context menu when clicking elsewhere
+    useEffect(() => {
+        const handleClick = () => setContextMenu({ ...contextMenu, visible: false });
+        window.addEventListener('click', handleClick);
+        return () => window.removeEventListener('click', handleClick);
+    }, [contextMenu]);
 
     // Function to handle new folder creation
     const handleCreateFolder = async () => {
@@ -164,13 +141,64 @@ export default function Home() {
     };
 
 
+    const handleContextMenu = (event: React.MouseEvent, item: DriveItem) => {
+        event.preventDefault();
+        setContextMenu({ visible: true, x: event.pageX, y: event.pageY, item: item });
+    };
 
-    // Fetch items when the component mounts or session changes
-    // useEffect(() => {
-    //     if (session) {
-    //         fetchItems();
-    //     }
-    // }, [session]);
+    // NEW: Handle Delete Action
+    const handleDelete = async () => {
+        if (!contextMenu.item || !session) return;
+        const confirmDelete = window.confirm(`Are you sure you want to delete "${contextMenu.item.name}"?`);
+        if (!confirmDelete) return;
+
+        try {
+            await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${session.access_token}` },
+            });
+            await fetchItems(currentFolderId);
+        } catch (error) { console.error(error); alert('Failed to delete item.'); }
+    };
+
+    // NEW: Handle Rename Action
+    const handleRename = async () => {
+        if (!contextMenu.item || !session) return;
+        const newName = prompt(`Enter new name for "${contextMenu.item.name}":`, contextMenu.item.name);
+        if (!newName || newName === contextMenu.item.name) return;
+
+        try {
+            await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/rename`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                body: JSON.stringify({ newName }),
+            });
+            await fetchItems(currentFolderId);
+        } catch (error) { console.error(error); alert('Failed to rename item.'); }
+    };
+
+    // NEW: Handle Download Action
+    const handleDownload = async () => {
+        if (!contextMenu.item || !session || contextMenu.item.type !== 'file') return;
+        
+        try {
+            const response = await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/download`, {
+                headers: { 'Authorization': `Bearer ${session.access_token}` },
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+
+            // Create a temporary link to trigger the download
+            const link = document.createElement('a');
+            link.href = data.downloadUrl;
+            link.download = contextMenu.item.name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+        } catch (error) { console.error(error); alert('Failed to download file.'); }
+    };
+
 
     // This is the login/signup view for non-authenticated users
     if (!user) {
@@ -259,6 +287,7 @@ export default function Home() {
                             <div
                                 key={item.id}
                                 onDoubleClick={item.type === 'folder' ? () => handleFolderDoubleClick(item) : undefined}
+                                onContextMenu={(e) => handleContextMenu(e, item)}
                                 className={`flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow ${item.type === 'folder' ? 'cursor-pointer hover:bg-blue-50' : ''}`}
                             >
                                 <span className="text-4xl mb-2">{item.type === 'folder' ? '📁' : '📄'}</span>
@@ -267,6 +296,22 @@ export default function Home() {
                         ))
                     ) : (<p>This folder is empty.</p>)}
                 </div>
+
+                {/* NEW: Context Menu Component */}
+                {contextMenu.visible && (
+                    <div
+                        style={{ top: contextMenu.y, left: contextMenu.x }}
+                        className="absolute bg-white border rounded shadow-lg z-10"
+                    >
+                        <ul className="py-1">
+                            {contextMenu.item?.type === 'file' && (
+                                <li onClick={handleDownload} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Download</li>
+                            )}
+                            <li onClick={handleRename} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Rename</li>
+                            <li onClick={handleDelete} className="px-4 py-2 hover:bg-red-100 text-red-600 cursor-pointer">Delete</li>
+                        </ul>
+                    </div>
+                )}
             </main>
         </div>
     );
