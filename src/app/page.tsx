@@ -1,5 +1,6 @@
 'use client';
 
+import Landing from '@/components/Landing';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
@@ -203,20 +204,7 @@ export default function Home() {
     // This is the login/signup view for non-authenticated users
     if (!user) {
         return (
-            <main className="flex flex-col items-center justify-center min-h-screen p-24">
-                <h1 className="text-4xl font-bold mb-8">Welcome to Your Drive</h1>
-                <div className="text-center">
-                    <p>Please sign in to continue.</p>
-                    <div className="mt-4 space-x-4">
-                        <Link href="/signin" className="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700">
-                            Sign In
-                        </Link>
-                        <Link href="/signup" className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
-                            Sign Up
-                        </Link>
-                    </div>
-                </div>
-            </main>
+            <Landing/>
         );
     }
 
