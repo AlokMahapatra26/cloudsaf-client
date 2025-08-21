@@ -4,14 +4,15 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-// Updated interface to match what the API provides
+// Updated interface to be consistent with the main page
 interface DriveItem {
     id: string;
     name: string;
     type: 'file' | 'folder';
+    mimetype: string | null;
 }
 
-// NEW: Interface for the context menu state
+// Interface for the context menu state
 interface ContextMenu {
     visible: boolean;
     x: number;
@@ -19,44 +20,50 @@ interface ContextMenu {
     item: DriveItem | null;
 }
 
+// Helper function to show file-specific icons
+const getFileIcon = (item: DriveItem) => {
+    if (item.type === 'folder') return <span className="text-4xl mb-2">📁</span>;
+    if (item.mimetype?.startsWith('image/')) return <span className="text-4xl mb-2">🖼️</span>;
+    if (item.mimetype === 'application/pdf') return <span className="text-4xl mb-2">📄</span>;
+    if (item.mimetype?.startsWith('video/')) return <span className="text-4xl mb-2">🎬</span>;
+    return <span className="text-4xl mb-2">📄</span>;
+};
+
+
 export default function SharedWithMe() {
     const { session } = useAuth();
     const [items, setItems] = useState<DriveItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    
-    // NEW: State to manage the context menu
     const [contextMenu, setContextMenu] = useState<ContextMenu>({ visible: false, x: 0, y: 0, item: null });
 
-    useEffect(() => {
-        const fetchSharedItems = async () => {
-            if (!session) return;
-            setIsLoading(true);
-            try {
-                const response = await fetch('http://localhost:8000/api/files/shared-with-me', {
-                    headers: { 'Authorization': `Bearer ${session.access_token}` },
-                });
-                if (!response.ok) throw new Error('Failed to fetch shared items');
-                const data = await response.json();
-                setItems(data);
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    const fetchSharedItems = async () => {
+        if (!session) return;
+        setIsLoading(true);
+        try {
+            const response = await fetch('http://localhost:8000/api/files/shared-with-me', {
+                headers: { 'Authorization': `Bearer ${session.access_token}` },
+            });
+            if (!response.ok) throw new Error('Failed to fetch shared items');
+            const data = await response.json();
+            setItems(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (session) {
             fetchSharedItems();
         }
     }, [session]);
 
-    // NEW: Handle right-clicking on an item
     const handleContextMenu = (event: React.MouseEvent, item: DriveItem) => {
         event.preventDefault();
         setContextMenu({ visible: true, x: event.pageX, y: event.pageY, item: item });
     };
 
-    // NEW: Handle the download action from the context menu
     const handleDownload = async () => {
         if (!contextMenu.item || !session || contextMenu.item.type !== 'file') return;
         
@@ -67,19 +74,39 @@ export default function SharedWithMe() {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error);
 
-            // Create a temporary link to trigger the browser's download functionality
             const link = document.createElement('a');
             link.href = data.downloadUrl;
             link.download = contextMenu.item.name;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
         } catch (error) { 
             console.error(error); 
             alert('Failed to download file.'); 
         } finally {
-            setContextMenu({ visible: false, x: 0, y: 0, item: null }); // Close the menu
+            setContextMenu({ visible: false, x: 0, y: 0, item: null });
+        }
+    };
+
+    const handleRemove = async () => {
+        if (!contextMenu.item || !session) return;
+        const confirmRemove = window.confirm(`Are you sure you want to remove "${contextMenu.item.name}" from your shared files?`);
+        if (!confirmRemove) return;
+        
+        try {
+            const response = await fetch(`http://localhost:8000/api/shares/${contextMenu.item.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${session.access_token}` },
+            });
+            if (!response.ok) throw new Error('Failed to remove share');
+            
+            // Refresh the list to show the item has been removed
+            await fetchSharedItems();
+        } catch (error) {
+            console.error("Failed to remove share:", error);
+            alert("Failed to remove share.");
+        } finally {
+            setContextMenu({ visible: false, x: 0, y: 0, item: null });
         }
     };
 
@@ -94,10 +121,10 @@ export default function SharedWithMe() {
                     items.map((item) => (
                         <div 
                             key={item.id} 
-                            onContextMenu={(e) => handleContextMenu(e, item)} // NEW: Attach context menu event
+                            onContextMenu={(e) => handleContextMenu(e, item)}
                             className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow cursor-context-menu"
                         >
-                            <span className="text-4xl mb-2">{item.type === 'folder' ? '📁' : '📄'}</span>
+                            {getFileIcon(item)}
                             <span className="text-sm text-center truncate w-full">{item.name}</span>
                         </div>
                     ))
@@ -109,7 +136,7 @@ export default function SharedWithMe() {
                 &larr; Back to My Drive
             </Link>
 
-            {/* NEW: Render the context menu when it's visible */}
+            
             {contextMenu.visible && (
                 <div
                     style={{ top: contextMenu.y, left: contextMenu.x }}
@@ -121,6 +148,9 @@ export default function SharedWithMe() {
                                 Download
                             </li>
                         )}
+                        <li onClick={handleRemove} className="px-4 py-2 hover:bg-red-100 text-red-600 cursor-pointer">
+                            Remove
+                        </li>
                     </ul>
                 </div>
             )}
