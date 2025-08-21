@@ -57,7 +57,7 @@ export default function Home() {
     const [items, setItems] = useState<DriveItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
-    
+
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
     const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([{ id: null, name: 'My Drive' }]);
 
@@ -69,9 +69,37 @@ export default function Home() {
 
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [itemToMove, setItemToMove] = useState<DriveItem | null>(null);
+    const [searchQuery, setSearchQuery] = useState(''); 
+    const [searchResults, setSearchResults] = useState<DriveItem[] | null>(null); 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    useEffect(() => {
+        if (!session || searchQuery.trim() === '') {
+            setSearchResults(null);
+            return;
+        }
 
+        const fetchSearchResults = async () => {
+             try {
+                const response = await fetch(`http://localhost:8000/api/files/search?query=${searchQuery}`, {
+                    headers: { 'Authorization': `Bearer ${session.access_token}` },
+                });
+                if (!response.ok) throw new Error('Failed to fetch search results');
+                const data = await response.json();
+                
+                
+                const uniqueResults = data.filter((v: DriveItem, i: number, a: DriveItem[]) => a.findIndex(t => (t.id === v.id)) === i);
+                setSearchResults(uniqueResults);
+
+            } catch (error) {
+                console.error("Search error:", error);
+                setSearchResults([]);
+            }
+        };
+
+        const timer = setTimeout(fetchSearchResults, 500); // Debounce search
+        return () => clearTimeout(timer); // Cleanup on unmount or search change
+    }, [searchQuery, session]);
 
 
     // ... inside the Home component
@@ -84,7 +112,7 @@ export default function Home() {
 
     const handleMoveConfirm = async (destinationFolderId: string | null) => {
         if (!itemToMove || !session) return;
-        
+
         try {
             await fetch(`http://localhost:8000/api/files/${itemToMove.id}/move`, {
                 method: 'PATCH',
@@ -102,7 +130,7 @@ export default function Home() {
         }
     };
 
-      // This useEffect fetches the secure URL for the file when the viewer is opened
+    // This useEffect fetches the secure URL for the file when the viewer is opened
     useEffect(() => {
         if (!viewingItem || !session) return;
 
@@ -137,7 +165,7 @@ export default function Home() {
             if (!response.ok) throw new Error('Failed to fetch items');
             const data = await response.json();
             setItems(data);
-        } catch (error) { console.error(error); } 
+        } catch (error) { console.error(error); }
         finally { setIsLoading(false); }
     };
 
@@ -165,7 +193,7 @@ export default function Home() {
             await fetchItems(currentFolderId);
         } catch (error) { console.error(error); }
     };
-    
+
     const handleUploadClick = () => fileInputRef.current?.click();
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,10 +213,10 @@ export default function Home() {
                 body: formData,
             });
             await fetchItems(currentFolderId);
-        } catch (error) { console.error(error); alert('Upload failed'); } 
+        } catch (error) { console.error(error); alert('Upload failed'); }
         finally {
             setIsUploading(false);
-            if(fileInputRef.current) fileInputRef.current.value = "";
+            if (fileInputRef.current) fileInputRef.current.value = "";
         }
     };
 
@@ -202,7 +230,7 @@ export default function Home() {
         setBreadcrumbs(newBreadcrumbs);
         setCurrentFolderId(newBreadcrumbs[index].id);
     };
-    
+
 
     const handleContextMenu = (event: React.MouseEvent, item: DriveItem) => {
         event.preventDefault();
@@ -216,7 +244,7 @@ export default function Home() {
 
     const handleShare = async () => {
         if (!contextMenu.item || !session) return;
-        
+
         const email = prompt(`Enter the email of the user you want to share "${contextMenu.item.name}" with:`);
         if (!email) return;
 
@@ -228,7 +256,7 @@ export default function Home() {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Failed to share item.');
-            
+
             alert('Item shared successfully!');
         } catch (error) {
             console.error(error);
@@ -273,7 +301,7 @@ export default function Home() {
 
     const handleDownload = async () => {
         if (!contextMenu.item || !session || contextMenu.item.type !== 'file') return;
-        
+
         try {
             const response = await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/download`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
@@ -298,6 +326,8 @@ export default function Home() {
             // If it's a folder, navigate into it
             setBreadcrumbs([...breadcrumbs, { id: item.id, name: item.name }]);
             setCurrentFolderId(item.id);
+            setSearchQuery('');
+            setSearchResults(null);
         } else {
             // If it's a file, open it in the viewer
             setViewingItem(item);
@@ -306,7 +336,7 @@ export default function Home() {
 
     if (!user) {
         return (
-           <Landing/>
+            <Landing />
         );
     }
 
@@ -314,12 +344,19 @@ export default function Home() {
         <div className="min-h-screen bg-gray-100" onClick={() => setContextMenu({ ...contextMenu, visible: false })}>
             <header className="bg-white shadow-sm p-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold">My Drive</h1>
+                <input
+                    type="text"
+                    placeholder="Search your drive..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="p-2 border rounded w-1/3"
+                />
                 <div className="flex items-center gap-4">
                     <p>{user.email}</p>
                     <button onClick={signOut} className="px-4 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700">Sign Out</button>
                 </div>
             </header>
-            
+
             <main className="p-8">
                 <div className="flex justify-between items-center mb-6">
                     <nav className="flex items-center text-sm font-medium">
@@ -335,7 +372,6 @@ export default function Home() {
                             </div>
                         ))}
                     </nav>
-
                     <div className="flex gap-4">
                         <Link href="/shared" className="text-blue-600 hover:underline">
                             Shared with me
@@ -348,21 +384,39 @@ export default function Home() {
                     </div>
                 </div>
 
+                {/* ✅ THIS IS THE UPDATED SECTION */}
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {isLoading ? <p>Loading...</p> : items.length > 0 ? (
-                        items.map((item) => (
-                            <div 
-                                key={item.id}
-                                onClick={() => handleItemClick(item)}
-                                onDoubleClick={item.type === 'folder' ? () => handleFolderDoubleClick(item) : undefined}
-                                onContextMenu={(e) => handleContextMenu(e, item)}
-                                className={`flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow ${item.type === 'folder' ? 'cursor-pointer hover:bg-blue-50' : ''}`}
-                            >
-                                {getFileIcon(item)}
-                                <span className="text-sm text-center truncate w-full">{item.name}</span>
-                            </div>
-                        ))
-                    ) : ( <p>This folder is empty.</p> )}
+                    {isLoading ? <p>Loading...</p> : (searchQuery && searchResults !== null) ? (
+                        // This part renders the search results
+                        searchResults.length > 0 ? (
+                            searchResults.map((item) => (
+                                <div
+                                    key={item.id}
+                                    onClick={() => handleItemClick(item)}
+                                    onContextMenu={(e) => handleContextMenu(e, item)}
+                                    className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow cursor-pointer hover:bg-blue-50"
+                                >
+                                    {getFileIcon(item)}
+                                    <span className="text-sm text-center truncate w-full">{item.name}</span>
+                                </div>
+                            ))
+                        ) : (<p>No files found matching your search.</p>)
+                    ) : (
+                        // This part renders the regular folder content
+                        items.length > 0 ? (
+                            items.map((item) => (
+                                <div
+                                    key={item.id}
+                                    onClick={() => handleItemClick(item)}
+                                    onContextMenu={(e) => handleContextMenu(e, item)}
+                                    className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow cursor-pointer hover:bg-blue-50"
+                                >
+                                    {getFileIcon(item)}
+                                    <span className="text-sm text-center truncate w-full">{item.name}</span>
+                                </div>
+                            ))
+                        ) : (<p>This folder is empty.</p>)
+                    )}
                 </div>
 
                 {contextMenu.visible && (
@@ -382,8 +436,8 @@ export default function Home() {
                     </div>
                 )}
 
-                 {viewingItem && (
-                    <div 
+                {viewingItem && (
+                    <div
                         className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
                         onClick={() => setViewingItem(null)} // Close modal on background click
                     >
@@ -418,8 +472,8 @@ export default function Home() {
                     </div>
                 )}
 
-                 {isMoveModalOpen && itemToMove && (
-                    <MoveModal 
+                {isMoveModalOpen && itemToMove && (
+                    <MoveModal
                         itemToMove={itemToMove}
                         onClose={() => setIsMoveModalOpen(false)}
                         onMoveConfirm={handleMoveConfirm}
