@@ -4,6 +4,7 @@ import Landing from '@/components/Landing';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
+import MoveModal from '@/components/MoveModel';
 
 interface DriveItem {
     id: string;
@@ -66,7 +67,40 @@ export default function Home() {
     const [viewingItemUrl, setViewingItemUrl] = useState<string | null>(null);
     const [isViewerLoading, setIsViewerLoading] = useState(false);
 
+    const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+    const [itemToMove, setItemToMove] = useState<DriveItem | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+
+
+    // ... inside the Home component
+    const handleMoveClick = () => {
+        if (!contextMenu.item) return;
+        setItemToMove(contextMenu.item);
+        setIsMoveModalOpen(true);
+        resetContextMenu();
+    };
+
+    const handleMoveConfirm = async (destinationFolderId: string | null) => {
+        if (!itemToMove || !session) return;
+        
+        try {
+            await fetch(`http://localhost:8000/api/files/${itemToMove.id}/move`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                body: JSON.stringify({ destinationFolderId }),
+            });
+            // Refresh the file list after moving
+            await fetchItems(currentFolderId);
+        } catch (error) {
+            console.error("Failed to move item:", error);
+            alert("Failed to move item.");
+        } finally {
+            setIsMoveModalOpen(false);
+            setItemToMove(null);
+        }
+    };
 
       // This useEffect fetches the secure URL for the file when the viewer is opened
     useEffect(() => {
@@ -337,6 +371,7 @@ export default function Home() {
                         className="absolute bg-white border rounded shadow-lg z-10"
                     >
                         <ul className="py-1">
+                            <li onClick={handleMoveClick} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Move</li>
                             <li onClick={handleShare} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Share</li>
                             {contextMenu.item?.type === 'file' && (
                                 <li onClick={handleDownload} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Download</li>
@@ -381,6 +416,14 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
+                )}
+
+                 {isMoveModalOpen && itemToMove && (
+                    <MoveModal 
+                        itemToMove={itemToMove}
+                        onClose={() => setIsMoveModalOpen(false)}
+                        onMoveConfirm={handleMoveConfirm}
+                    />
                 )}
             </main>
         </div>
