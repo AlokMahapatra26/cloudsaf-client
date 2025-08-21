@@ -43,7 +43,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Define a type for our file/folder items
 interface DriveItem {
@@ -56,6 +56,8 @@ export default function Home() {
     const { user, session, signOut } = useAuth();
     const [items, setItems] = useState<DriveItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false); // New state for upload feedback
+    const fileInputRef = useRef<HTMLInputElement>(null); // Ref for the hidden file input
 
     // Function to fetch files and folders
     const fetchItems = async () => {
@@ -103,6 +105,51 @@ export default function Home() {
             fetchItems();
         } catch (error) {
             console.error(error);
+        }
+    };
+
+     // Function to trigger the hidden file input
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+     // Function to handle the actual file upload
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!session || !event.target.files || event.target.files.length === 0) {
+            return;
+        }
+
+        const file = event.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        // We can add parent_id here if we are inside a folder
+        // formData.append('parent_id', currentFolderId); 
+
+        setIsUploading(true);
+        try {
+            const response = await fetch('http://localhost:8000/api/files/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to upload file');
+            }
+            
+            // Refresh the list to show the new file
+            await fetchItems();
+
+        } catch (error) {
+            console.error(error);
+            alert(`Upload failed: ${error instanceof Error ? error.message : String(error)}`);
+        } finally {
+            setIsUploading(false);
+            // Reset the file input so the same file can be uploaded again
+            if(fileInputRef.current) fileInputRef.current.value = "";
         }
     };
 
@@ -157,7 +204,23 @@ export default function Home() {
                     >
                         + Create Folder
                     </button>
+                     <button 
+                        onClick={handleUploadClick}
+                        disabled={isUploading}
+                        className="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 disabled:bg-gray-400"
+                    >
+                        {isUploading ? 'Uploading...' : '↑ Upload File'}
+                    </button>
+                    {/* Hidden file input */}
+                    <input 
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
                 </div>
+
+
 
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {isLoading ? (
