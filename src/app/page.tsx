@@ -1,5 +1,6 @@
 'use client';
 
+import Landing from '@/components/Landing';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
@@ -10,6 +11,7 @@ interface DriveItem {
     type: 'file' | 'folder';
     parent_id: string | null;
     storage_path: string | null;
+    mimetype: string | null;
 }
 
 interface Breadcrumb {
@@ -24,6 +26,31 @@ interface ContextMenu {
     item: DriveItem | null;
 }
 
+const getFileIcon = (item: DriveItem) => {
+    if (item.type === 'folder') {
+        return <span className="text-4xl mb-2">📁</span>;
+    }
+
+    // Check for common image types
+    if (item.mimetype && item.mimetype.startsWith('image/')) {
+        // Placeholder: we'll make this a real thumbnail in the next step
+        return <span className="text-4xl mb-2">🖼️</span>;
+    }
+
+    // Check for common document types
+    if (item.mimetype && item.mimetype === 'application/pdf') {
+        return <span className="text-4xl mb-2">📄</span>;
+    }
+
+    // Check for common video types
+    if (item.mimetype && item.mimetype.startsWith('video/')) {
+        return <span className="text-4xl mb-2">🎬</span>;
+    }
+
+    // Default icon for other files
+    return <span className="text-4xl mb-2">📄</span>;
+};
+
 export default function Home() {
     const { user, session, signOut } = useAuth();
     const [items, setItems] = useState<DriveItem[]>([]);
@@ -35,7 +62,37 @@ export default function Home() {
 
     const [contextMenu, setContextMenu] = useState<ContextMenu>({ visible: false, x: 0, y: 0, item: null });
 
+    const [viewingItem, setViewingItem] = useState<DriveItem | null>(null);
+    const [viewingItemUrl, setViewingItemUrl] = useState<string | null>(null);
+    const [isViewerLoading, setIsViewerLoading] = useState(false);
+
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+      // This useEffect fetches the secure URL for the file when the viewer is opened
+    useEffect(() => {
+        if (!viewingItem || !session) return;
+
+        const fetchFileUrl = async () => {
+            setIsViewerLoading(true);
+            setViewingItemUrl(null); // Reset previous URL
+            try {
+                const response = await fetch(`http://localhost:8000/api/files/${viewingItem.id}/download`, {
+                    headers: { 'Authorization': `Bearer ${session.access_token}` },
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error);
+                setViewingItemUrl(data.downloadUrl);
+            } catch (error) {
+                console.error("Failed to fetch file URL:", error);
+                alert('Could not load file for preview.');
+                setViewingItem(null); // Close viewer on error
+            } finally {
+                setIsViewerLoading(false);
+            }
+        };
+
+        fetchFileUrl();
+    }, [viewingItem, session]);
 
     const fetchItems = async (folderId: string | null) => {
         if (!session) return;
@@ -201,18 +258,21 @@ export default function Home() {
         }
     };
 
+
+    const handleItemClick = (item: DriveItem) => {
+        if (item.type === 'folder') {
+            // If it's a folder, navigate into it
+            setBreadcrumbs([...breadcrumbs, { id: item.id, name: item.name }]);
+            setCurrentFolderId(item.id);
+        } else {
+            // If it's a file, open it in the viewer
+            setViewingItem(item);
+        }
+    };
+
     if (!user) {
         return (
-            <main className="flex flex-col items-center justify-center min-h-screen p-24">
-                <h1 className="text-4xl font-bold mb-8">Welcome to Your Drive</h1>
-                <div className="text-center">
-                    <p>Please sign in to continue.</p>
-                    <div className="mt-4 space-x-4">
-                        <Link href="/signin" className="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700">Sign In</Link>
-                        <Link href="/signup" className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">Sign Up</Link>
-                    </div>
-                </div>
-            </main>
+           <Landing/>
         );
     }
 
@@ -259,11 +319,12 @@ export default function Home() {
                         items.map((item) => (
                             <div 
                                 key={item.id}
+                                onClick={() => handleItemClick(item)}
                                 onDoubleClick={item.type === 'folder' ? () => handleFolderDoubleClick(item) : undefined}
                                 onContextMenu={(e) => handleContextMenu(e, item)}
                                 className={`flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow ${item.type === 'folder' ? 'cursor-pointer hover:bg-blue-50' : ''}`}
                             >
-                                <span className="text-4xl mb-2">{item.type === 'folder' ? '📁' : '📄'}</span>
+                                {getFileIcon(item)}
                                 <span className="text-sm text-center truncate w-full">{item.name}</span>
                             </div>
                         ))
@@ -283,6 +344,42 @@ export default function Home() {
                             <li onClick={handleRename} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Rename</li>
                             <li onClick={handleDelete} className="px-4 py-2 hover:bg-red-100 text-red-600 cursor-pointer">Delete</li>
                         </ul>
+                    </div>
+                )}
+
+                 {viewingItem && (
+                    <div 
+                        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+                        onClick={() => setViewingItem(null)} // Close modal on background click
+                    >
+                        <div className="bg-white p-4 rounded-lg max-w-4xl max-h-[90vh] w-full h-full flex flex-col" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-bold text-lg truncate">{viewingItem.name}</h3>
+                                <button onClick={() => setViewingItem(null)} className="text-2xl font-bold">&times;</button>
+                            </div>
+                            <div className="flex-grow flex items-center justify-center">
+                                {isViewerLoading ? (
+                                    <p>Loading...</p>
+                                ) : viewingItemUrl ? (
+                                    <>
+                                        {viewingItem.mimetype?.startsWith('image/') && (
+                                            <img src={viewingItemUrl} alt={viewingItem.name} className="max-w-full max-h-full object-contain" />
+                                        )}
+                                        {viewingItem.mimetype?.startsWith('video/') && (
+                                            <video src={viewingItemUrl} controls className="max-w-full max-h-full"></video>
+                                        )}
+                                        {viewingItem.mimetype === 'application/pdf' && (
+                                            <iframe src={viewingItemUrl} className="w-full h-full"></iframe>
+                                        )}
+                                        {!viewingItem.mimetype?.startsWith('image/') && !viewingItem.mimetype?.startsWith('video/') && viewingItem.mimetype !== 'application/pdf' && (
+                                            <p>Preview is not available for this file type.</p>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p>Could not load file.</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
             </main>
