@@ -11,6 +11,7 @@ import { getFileIcon, DriveItem } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { FolderPlus, Loader2, Search, Share2, Trash2, UploadCloud, User2, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { ModeToggle } from '@/components/ModeToggle';
 
 
 interface Breadcrumb {
@@ -383,6 +384,7 @@ export default function Home() {
                     <div className="hidden sm:block">
                         <StorageIndicator refreshTrigger={items.length} />
                     </div>
+                    <ModeToggle/>
                     {/* User Profile Button */}
                     <Link href={"/profile"}>
                         <Button variant="ghost" size="icon" className="h-9 w-9 border">
@@ -469,7 +471,7 @@ export default function Home() {
                                     key={item.id}
                                     onClick={() => handleItemClick(item)}
                                     onContextMenu={(e) => handleContextMenu(e, item)}
-                                    className="flex flex-col items-center justify-center p-8  bg-white  border cursor-pointer hover:bg-blue-50 rounded-xl"
+                                    className="flex flex-col items-center justify-center p-8   border cursor-pointer  hover:bg-accent rounded-xl"
                                 >
                                     {getFileIcon(item)}
                                     <span className="text-sm text-center truncate w-full">{item.name}</span>
@@ -482,16 +484,16 @@ export default function Home() {
                 {contextMenu.visible && (
                     <div
                         style={{ top: contextMenu.y, left: contextMenu.x }}
-                        className="absolute bg-white border rounded shadow-lg z-10"
+                        className="absolute bg-accent border rounded shadow-lg z-10"
                     >
                         <ul className="py-1">
-                            <li onClick={handleMoveClick} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Move</li>
-                            <li onClick={handleShare} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Share</li>
+                            <li onClick={handleMoveClick} className="px-4 py-2  cursor-pointer hover:bg-card">Move</li>
+                            <li onClick={handleShare} className="px-4 py-2  cursor-pointer hover:bg-card">Share</li>
                             {contextMenu.item?.type === 'file' && (
-                                <li onClick={handleDownload} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Download</li>
+                                <li onClick={handleDownload} className="px-4 py-2  cursor-pointer hover:bg-card">Download</li>
                             )}
-                            <li onClick={handleRename} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Rename</li>
-                            <li onClick={handleDelete} className="px-4 py-2 hover:bg-red-100 text-red-600 cursor-pointer">Delete</li>
+                            <li onClick={handleRename} className="px-4 py-2  cursor-pointer hover:bg-card">Rename</li>
+                            <li onClick={handleDelete} className="px-4 py-2  text-red-600 cursor-pointer hover:bg-card">Delete</li>
                         </ul>
                     </div>
                 )}
@@ -501,7 +503,7 @@ export default function Home() {
                         className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
                         onClick={() => setViewingItem(null)} // Close modal on background click
                     >
-                        <div className="bg-white p-4 rounded-lg max-w-4xl max-h-[90vh] w-full h-full flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="bg-card p-4 rounded-lg max-w-4xl max-h-[90vh] w-full h-full flex flex-col" onClick={e => e.stopPropagation()}>
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-bold text-lg truncate">{viewingItem.name}</h3>
                                 <button onClick={() => setViewingItem(null)} className="text-2xl font-bold">&times;</button>
@@ -536,7 +538,7 @@ export default function Home() {
 
                 <Dropzone currentFolderId={currentFolderId} onUploadComplete={refreshItems}>
                     {/* This is the new styled dropzone area */}
-                    <div className="flex flex-col items-center justify-center w-full p-10 mt-4 border-2 border-dashed rounded-lg text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div className="flex flex-col items-center justify-center w-full p-10 mt-4 border-2 border-dashed rounded-lg text-center cursor-pointer bg-card">
                         {/* Cloud Upload Icon (SVG) */}
                         <svg className="w-12 h-12 text-gray-400 mb-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { redirect } from 'next/navigation'
 
 const Profilepage = () => {
     const { user, signOut } = useAuth();
@@ -16,7 +17,8 @@ const Profilepage = () => {
 
     const handleSignOut = async () => {
         if (signOut) {
-            await signOut();
+            signOut();
+            redirect('/')
         }
     };
 

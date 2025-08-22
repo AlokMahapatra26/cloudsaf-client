@@ -3,6 +3,7 @@
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { getFileIcon } from '@/lib/utils';
 
 interface DriveItem {
     id: string;
@@ -21,31 +22,6 @@ interface ContextMenu {
     item: DriveItem | null;
 }
 
-
-const getFileIcon = (item: DriveItem) => {
-    if (item.type === 'folder') {
-        return <span className="text-4xl mb-2">📁</span>;
-    }
-
-    // Check for common image types
-    if (item.mimetype && item.mimetype.startsWith('image/')) {
-        // Placeholder: we'll make this a real thumbnail in the next step
-        return <span className="text-4xl mb-2">🖼️</span>;
-    }
-
-    // Check for common document types
-    if (item.mimetype && item.mimetype === 'application/pdf') {
-        return <span className="text-4xl mb-2">📄</span>;
-    }
-
-    // Check for common video types
-    if (item.mimetype && item.mimetype.startsWith('video/')) {
-        return <span className="text-4xl mb-2">🎬</span>;
-    }
-
-    // Default icon for other files
-    return <span className="text-4xl mb-2">📄</span>;
-};
 
 export default function TrashPage() {
     const { session } = useAuth();
