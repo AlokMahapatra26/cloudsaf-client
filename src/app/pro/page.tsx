@@ -1,10 +1,10 @@
-// src/app/page.tsx
-
+"use client"
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, LogOut, X } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
+import { redirect } from 'next/navigation';
 
 const PricingPage = () => {
     return (
@@ -43,7 +43,7 @@ const PricingPage = () => {
                             </ul>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full" variant="outline">Sign up for free</Button>
+                            <Button className="w-full" variant="outline" onClick={()=>redirect('/signup')}>Sign up for free</Button>
                         </CardFooter>
                     </Card>
 

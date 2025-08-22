@@ -93,10 +93,10 @@ export default function TrashPage() {
             </Link>
 
             {contextMenu.visible && (
-                <div style={{ top: contextMenu.y, left: contextMenu.x }} className="absolute bg-white border rounded shadow-lg z-10">
+                <div style={{ top: contextMenu.y, left: contextMenu.x }} className="absolute bg-card border rounded shadow-lg z-10">
                     <ul className="py-1">
-                        <li onClick={handleRestore} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Restore</li>
-                        <li onClick={handleDeletePermanent} className="px-4 py-2 hover:bg-red-100 text-red-600 cursor-pointer">Delete Permanently</li>
+                        <li onClick={handleRestore} className="px-4 py-2  cursor-pointer hover:bg-accent">Restore</li>
+                        <li onClick={handleDeletePermanent} className="px-4 py-2  text-red-600 cursor-pointe hover:bg-accent">Delete Permanently</li>
                     </ul>
                 </div>
             )}

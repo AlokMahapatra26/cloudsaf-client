@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { redirect } from 'next/navigation';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
@@ -35,12 +37,12 @@ export default function SignIn() {
 
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-zinc-50">
+        <div className="flex items-center justify-center min-h-screen ">
             <form
                 onSubmit={handleSubmit}
-                className="p-8 bg-white rounded-2xl shadow-lg w-96 border border-zinc-200"
+                className="p-8  rounded-2xl  w-96 border"
             >
-                <h2 className="text-2xl font-semibold mb-6 text-center text-zinc-800">
+                <h2 className="text-2xl font-semibold mb-6 text-center ">
                     Sign In
                 </h2>
 
@@ -49,23 +51,31 @@ export default function SignIn() {
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-3 mb-4 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 text-zinc-800 placeholder-zinc-400"
+                    className="text-foreground w-full p-3 mb-4 border  rounded-lg focus:outline-none focus:ring-0   placeholder-zinc-400"
                 />
 
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-3 mb-4 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 text-zinc-800 placeholder-zinc-400"
-                />
+                  <PasswordInput password={password} setPassword={setPassword} />
+
+
 
                 <button
                     type="submit"
-                    className="w-full p-3 text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition duration-200"
+                    className="w-full p-3 bg-blue-600 border cursor-pointer rounded-lg  transition duration-200"
                 >
                     Sign In
                 </button>
+
+                <div className="mt-4 text-center">
+                    <p className="text-sm text-gray-600">
+                        Don’t have an account?{" "}
+                        <button
+                            className="text-blue-600 hover:underline font-medium cursor-pointer"
+                            onClick={() => redirect("/signup")}
+                        >
+                            Sign up
+                        </button>
+                    </p>
+                </div>
 
                 {error && (
                     <p className="mt-4 text-sm text-center text-red-500">{error}</p>

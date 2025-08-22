@@ -3,14 +3,7 @@
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-
-// Updated interface to be consistent with the main page
-interface DriveItem {
-    id: string;
-    name: string;
-    type: 'file' | 'folder';
-    mimetype: string | null;
-}
+import { getFileIcon , DriveItem} from '@/lib/utils';
 
 // Interface for the context menu state
 interface ContextMenu {
@@ -20,14 +13,6 @@ interface ContextMenu {
     item: DriveItem | null;
 }
 
-// Helper function to show file-specific icons
-const getFileIcon = (item: DriveItem) => {
-    if (item.type === 'folder') return <span className="text-4xl mb-2">📁</span>;
-    if (item.mimetype?.startsWith('image/')) return <span className="text-4xl mb-2">🖼️</span>;
-    if (item.mimetype === 'application/pdf') return <span className="text-4xl mb-2">📄</span>;
-    if (item.mimetype?.startsWith('video/')) return <span className="text-4xl mb-2">🎬</span>;
-    return <span className="text-4xl mb-2">📄</span>;
-};
 
 
 export default function SharedWithMe() {
@@ -122,7 +107,7 @@ export default function SharedWithMe() {
                         <div 
                             key={item.id} 
                             onContextMenu={(e) => handleContextMenu(e, item)}
-                            className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow cursor-context-menu"
+                            className="flex flex-col items-center justify-center p-4  rounded-lg shadow cursor-context-menu"
                         >
                             {getFileIcon(item)}
                             <span className="text-sm text-center truncate w-full">{item.name}</span>
@@ -140,15 +125,15 @@ export default function SharedWithMe() {
             {contextMenu.visible && (
                 <div
                     style={{ top: contextMenu.y, left: contextMenu.x }}
-                    className="absolute bg-white border rounded shadow-lg z-10"
+                    className="absolute  border rounded shadow-lg z-10"
                 >
-                    <ul className="py-1">
+                    <ul className="">
                         {contextMenu.item?.type === 'file' && (
-                            <li onClick={handleDownload} className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                            <li onClick={handleDownload} className="px-4 py-2  cursor-pointer bg-card hover:bg-accent">
                                 Download
                             </li>
                         )}
-                        <li onClick={handleRemove} className="px-4 py-2 hover:bg-red-100 text-red-600 cursor-pointer">
+                        <li onClick={handleRemove} className="px-4 py-2  text-red-600 cursor-pointer bg-card hover:bg-accent">
                             Remove
                         </li>
                     </ul>

@@ -456,7 +456,7 @@ export default function Home() {
                                     key={item.id}
                                     onClick={() => handleItemClick(item)}
                                     onContextMenu={(e) => handleContextMenu(e, item)}
-                                    className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow cursor-pointer hover:bg-blue-50"
+                                    className="flex flex-col items-center justify-center p-4  rounded-lg shadow cursor-pointer hover:bg-accent"
                                 >
                                     {getFileIcon(item)}
                                     <span className="text-sm text-center truncate w-full">{item.name}</span>

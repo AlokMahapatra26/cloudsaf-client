@@ -1,4 +1,3 @@
-// client/src/components/MoveModal.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -10,7 +9,7 @@ interface DriveItem {
     type: 'file' | 'folder';
 }
 
-// ✅ NEW: Define the Breadcrumb interface explicitly
+
 interface Breadcrumb {
     id: string | null;
     name: string;
@@ -27,7 +26,7 @@ export default function MoveModal({ itemToMove, onClose, onMoveConfirm }: MoveMo
     const [folders, setFolders] = useState<DriveItem[]>([]);
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
     
-    // ✅ FIX: Explicitly type the useState hook
+    
     const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([{ id: null, name: 'My Drive' }]);
 
     const fetchFolders = async (folderId: string | null) => {
@@ -60,8 +59,8 @@ export default function MoveModal({ itemToMove, onClose, onMoveConfirm }: MoveMo
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg w-full max-w-lg p-6">
+        <div className="fixed inset-0 bg-accent bg-opacity-50 flex items-center justify-center z-50">
+            <div className=" rounded-lg w-full max-w-lg p-6">
                 <h2 className="text-xl font-bold mb-4">Move "{itemToMove.name}"</h2>
                 
                 <div className="flex items-center text-sm mb-4 border-b pb-2">
@@ -78,7 +77,7 @@ export default function MoveModal({ itemToMove, onClose, onMoveConfirm }: MoveMo
                 <div className="h-64 overflow-y-auto">
                     {folders.length > 0 ? (
                         folders.map(folder => (
-                            <div key={folder.id} onClick={() => handleFolderClick(folder)} className="p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center gap-2">
+                            <div key={folder.id} onClick={() => handleFolderClick(folder)} className="p-2 hover:bg-card rounded cursor-pointer flex items-center gap-2">
                                 <span>📁</span> {folder.name}
                             </div>
                         ))
@@ -88,8 +87,8 @@ export default function MoveModal({ itemToMove, onClose, onMoveConfirm }: MoveMo
                 </div>
 
                 <div className="flex justify-end gap-4 mt-6">
-                    <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Cancel</button>
-                    <button onClick={() => onMoveConfirm(currentFolderId)} className="px-4 py-2 bg-blue-500 text-white rounded">Move Here</button>
+                    <button onClick={onClose} className="px-4 py-2 bg-accent rounded">Cancel</button>
+                    <button onClick={() => onMoveConfirm(currentFolderId)} className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer">Move Here</button>
                 </div>
             </div>
         </div>
