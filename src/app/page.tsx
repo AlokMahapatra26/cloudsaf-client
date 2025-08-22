@@ -5,18 +5,10 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import MoveModal from '@/components/MoveModel';
-import { Session } from '@supabase/supabase-js';
 import Dropzone from '@/components/Dropzone';
 import StorageIndicator from '@/components/StorageIndicator';
+import { getFileIcon, DriveItem } from '@/lib/utils';
 
-interface DriveItem {
-    id: string;
-    name: string;
-    type: 'file' | 'folder';
-    parent_id: string | null;
-    storage_path: string | null;
-    mimetype: string | null;
-}
 
 interface Breadcrumb {
     id: string | null;
@@ -30,30 +22,7 @@ interface ContextMenu {
     item: DriveItem | null;
 }
 
-const getFileIcon = (item: DriveItem) => {
-    if (item.type === 'folder') {
-        return <span className="text-4xl mb-2">📁</span>;
-    }
 
-    // Check for common image types
-    if (item.mimetype && item.mimetype.startsWith('image/')) {
-        // Placeholder: we'll make this a real thumbnail in the next step
-        return <span className="text-4xl mb-2">🖼️</span>;
-    }
-
-    // Check for common document types
-    if (item.mimetype && item.mimetype === 'application/pdf') {
-        return <span className="text-4xl mb-2">📄</span>;
-    }
-
-    // Check for common video types
-    if (item.mimetype && item.mimetype.startsWith('video/')) {
-        return <span className="text-4xl mb-2">🎬</span>;
-    }
-
-    // Default icon for other files
-    return <span className="text-4xl mb-2">📄</span>;
-};
 
 export default function Home() {
     const { user, session, signOut } = useAuth();
@@ -246,7 +215,7 @@ export default function Home() {
         setContextMenu({ visible: true, x: event.pageX, y: event.pageY, item: item });
     };
 
-    // FIX: Resetting the state after action completes
+   
     const resetContextMenu = () => {
         setContextMenu({ visible: false, x: 0, y: 0, item: null });
     };
@@ -359,7 +328,7 @@ export default function Home() {
 
         <div className="min-h-screen bg-gray-100" onClick={() => setContextMenu({ ...contextMenu, visible: false })}>
             <header className="bg-white shadow-sm p-4 flex justify-between items-center">
-                <h1 className="text-2xl font-bold">My Drive</h1>
+                <h1 className="text-2xl font-bold">CloudSAF</h1>
                 <input
                     type="text"
                     placeholder="Search your drive..."
@@ -522,6 +491,3 @@ export default function Home() {
     );
 }
 
-function useCallback(arg0: (acceptedFiles: File[]) => void, arg1: (string | Session | null)[]) {
-    throw new Error('Function not implemented.');
-}
