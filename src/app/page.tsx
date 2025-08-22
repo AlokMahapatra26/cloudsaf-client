@@ -210,13 +210,19 @@ export default function Home() {
 
         setIsUploading(true);
         try {
-            await fetch('http://localhost:8000/api/files/upload', {
+            const response = await fetch('http://localhost:8000/api/files/upload', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
                 body: formData,
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'An unknown error occurred');
+            }
+
             await fetchItems(currentFolderId);
-        } catch (error) { console.error(error); alert('Upload failed'); }
+        } catch (error) { console.error(error); alert(`Upload failed: ${error instanceof Error ? error.message : String(error)}`); }
         finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
