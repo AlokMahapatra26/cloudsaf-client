@@ -72,8 +72,8 @@ export default function Home() {
 
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [itemToMove, setItemToMove] = useState<DriveItem | null>(null);
-    const [searchQuery, setSearchQuery] = useState(''); 
-    const [searchResults, setSearchResults] = useState<DriveItem[] | null>(null); 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<DriveItem[] | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -83,14 +83,14 @@ export default function Home() {
         }
 
         const fetchSearchResults = async () => {
-             try {
+            try {
                 const response = await fetch(`http://localhost:8000/api/files/search?query=${searchQuery}`, {
                     headers: { 'Authorization': `Bearer ${session.access_token}` },
                 });
                 if (!response.ok) throw new Error('Failed to fetch search results');
                 const data = await response.json();
-                
-                
+
+
                 const uniqueResults = data.filter((v: DriveItem, i: number, a: DriveItem[]) => a.findIndex(t => (t.id === v.id)) === i);
                 setSearchResults(uniqueResults);
 
@@ -350,7 +350,7 @@ export default function Home() {
     }
 
     return (
-       
+
         <div className="min-h-screen bg-gray-100" onClick={() => setContextMenu({ ...contextMenu, visible: false })}>
             <header className="bg-white shadow-sm p-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold">My Drive</h1>
@@ -386,6 +386,9 @@ export default function Home() {
                         <Link href="/shared" className="text-blue-600 hover:underline">
                             Shared with me
                         </Link>
+                        <Link href="/trash" className="text-gray-600 hover:underline">
+                            Trash
+                        </Link>
                         <button onClick={handleCreateFolder} className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">+ Create Folder</button>
                         <button onClick={handleUploadClick} disabled={isUploading} className="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 disabled:bg-gray-400">
                             {isUploading ? 'Uploading...' : '↑ Upload File'}
@@ -394,7 +397,7 @@ export default function Home() {
                     </div>
                 </div>
 
-                
+
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {isLoading ? <p>Loading...</p> : (searchQuery && searchResults !== null) ? (
                         // This part renders the search results
@@ -483,21 +486,21 @@ export default function Home() {
                 )}
 
                 <Dropzone currentFolderId={currentFolderId} onUploadComplete={refreshItems}>
-    {/* This is the new styled dropzone area */}
-    <div className="flex flex-col items-center justify-center w-full p-10 mt-4 border-2 border-dashed rounded-lg text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
-        {/* Cloud Upload Icon (SVG) */}
-        <svg className="w-12 h-12 text-gray-400 mb-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-        </svg>
-        
-        <p className="mb-2 text-sm text-gray-500">
-            <span className="font-semibold">Drag and drop files here</span>
-        </p>
-        <p className="text-xs text-gray-500">
-            or use the "Upload File" button
-        </p>
-    </div>
-</Dropzone>
+                    {/* This is the new styled dropzone area */}
+                    <div className="flex flex-col items-center justify-center w-full p-10 mt-4 border-2 border-dashed rounded-lg text-center cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        {/* Cloud Upload Icon (SVG) */}
+                        <svg className="w-12 h-12 text-gray-400 mb-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                        </svg>
+
+                        <p className="mb-2 text-sm text-gray-500">
+                            <span className="font-semibold">Drag and drop files here</span>
+                        </p>
+                        <p className="text-xs text-gray-500">
+                            or use the "Upload File" button
+                        </p>
+                    </div>
+                </Dropzone>
 
                 {isMoveModalOpen && itemToMove && (
                     <MoveModal
@@ -508,7 +511,7 @@ export default function Home() {
                 )}
             </main>
         </div>
-         
+
     );
 }
 
