@@ -7,7 +7,7 @@ import { useEffect, useState, useRef } from 'react';
 import MoveModal from '@/components/MoveModel';
 import { Session } from '@supabase/supabase-js';
 import Dropzone from '@/components/Dropzone';
-
+import StorageIndicator from '@/components/StorageIndicator';
 
 interface DriveItem {
     id: string;
@@ -363,6 +363,7 @@ export default function Home() {
                 />
                 <div className="flex items-center gap-4">
                     <p>{user.email}</p>
+                    <StorageIndicator refreshTrigger={items.length} />
                     <button onClick={signOut} className="px-4 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700">Sign Out</button>
                 </div>
             </header>
