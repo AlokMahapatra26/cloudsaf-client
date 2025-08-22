@@ -24,8 +24,8 @@ export default function Dropzone({ children, currentFolderId, onUploadComplete }
             }
 
             try {
-                // ✅ UPDATED: Corrected API port and added error handling
-                const response = await fetch('http://localhost:3001/api/files/upload', {
+                
+                const response = await fetch('http://localhost:8000/api/files/upload', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${session.access_token}` },
                     body: formData,
@@ -37,7 +37,6 @@ export default function Dropzone({ children, currentFolderId, onUploadComplete }
                 }
             } catch (error) {
                 console.error('Upload failed for file:', file.name, error);
-                // ✅ NEW: Show a specific alert to the user on failure
                 alert(`Upload failed for ${file.name}: ${error instanceof Error ? error.message : String(error)}`);
             }
         });
@@ -56,7 +55,7 @@ export default function Dropzone({ children, currentFolderId, onUploadComplete }
     });
 
     return (
-        <div {...getRootProps()} className="relative h-full w-full">
+        <div {...getRootProps()} className="relative h-full w-full hidden md:block">
             <input {...getInputProps()} />
             {children}
             {isDragActive && (

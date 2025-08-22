@@ -8,6 +8,9 @@ import MoveModal from '@/components/MoveModel';
 import Dropzone from '@/components/Dropzone';
 import StorageIndicator from '@/components/StorageIndicator';
 import { getFileIcon, DriveItem } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { FolderPlus, Loader2, Search, Share2, Trash2, UploadCloud, User2, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 
 interface Breadcrumb {
@@ -42,6 +45,7 @@ export default function Home() {
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [itemToMove, setItemToMove] = useState<DriveItem | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [searchResults, setSearchResults] = useState<DriveItem[] | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -69,12 +73,12 @@ export default function Home() {
             }
         };
 
-        const timer = setTimeout(fetchSearchResults, 500); // Debounce search
-        return () => clearTimeout(timer); // Cleanup on unmount or search change
+        const timer = setTimeout(fetchSearchResults, 500);
+        return () => clearTimeout(timer);
     }, [searchQuery, session]);
 
 
-    // ... inside the Home component
+
     const handleMoveClick = () => {
         if (!contextMenu.item) return;
         setItemToMove(contextMenu.item);
@@ -102,13 +106,13 @@ export default function Home() {
         }
     };
 
-    // This useEffect fetches the secure URL for the file when the viewer is opened
+
     useEffect(() => {
         if (!viewingItem || !session) return;
 
         const fetchFileUrl = async () => {
             setIsViewerLoading(true);
-            setViewingItemUrl(null); // Reset previous URL
+            setViewingItemUrl(null);
             try {
                 const response = await fetch(`http://localhost:8000/api/files/${viewingItem.id}/download`, {
                     headers: { 'Authorization': `Bearer ${session.access_token}` },
@@ -215,7 +219,7 @@ export default function Home() {
         setContextMenu({ visible: true, x: event.pageX, y: event.pageY, item: item });
     };
 
-   
+
     const resetContextMenu = () => {
         setContextMenu({ visible: false, x: 0, y: 0, item: null });
     };
@@ -256,7 +260,7 @@ export default function Home() {
             });
             await fetchItems(currentFolderId);
         } catch (error) { console.error(error); alert('Failed to delete item.'); } finally {
-            resetContextMenu(); // FIX: Reset state here
+            resetContextMenu();
         }
     };
 
@@ -273,7 +277,7 @@ export default function Home() {
             });
             await fetchItems(currentFolderId);
         } catch (error) { console.error(error); alert('Failed to rename item.'); } finally {
-            resetContextMenu(); // FIX: Reset state here
+            resetContextMenu();
         }
     };
 
@@ -294,20 +298,18 @@ export default function Home() {
             link.click();
             document.body.removeChild(link);
         } catch (error) { console.error(error); alert('Failed to download file.'); } finally {
-            resetContextMenu(); // FIX: Reset state here
+            resetContextMenu();
         }
     };
 
 
     const handleItemClick = (item: DriveItem) => {
         if (item.type === 'folder') {
-            // If it's a folder, navigate into it
             setBreadcrumbs([...breadcrumbs, { id: item.id, name: item.name }]);
             setCurrentFolderId(item.id);
             setSearchQuery('');
             setSearchResults(null);
         } else {
-            // If it's a file, open it in the viewer
             setViewingItem(item);
         }
     };
@@ -326,57 +328,126 @@ export default function Home() {
 
     return (
 
-        <div className="min-h-screen bg-gray-100" onClick={() => setContextMenu({ ...contextMenu, visible: false })}>
-            <header className="bg-white shadow-sm p-4 flex justify-between items-center">
-                <h1 className="text-2xl font-bold">CloudSAF</h1>
-                <input
-                    type="text"
-                    placeholder="Search your drive..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="p-2 border rounded w-1/3"
-                />
+        <div className="min-h-screen" onClick={() => setContextMenu({ ...contextMenu, visible: false })}>
+
+            <header className="sticky top-0 z-40 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80 p-4 flex justify-between items-center transition-colors duration-300">
+
+                <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">CloudSAF</h1>
+                </div>
+
+                {/* Mobile Search Icon */}
+                <div className="md:hidden flex items-center gap-2">
+                    {!isSearchExpanded && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsSearchExpanded(true)}
+                            className="text-zinc-600 dark:text-zinc-400 border"
+                        >
+                            <Search className="h-5 w-8 "  />
+                        </Button>
+                    )}
+                </div>
+
+                {/* Expanded Search Bar (Mobile & Desktop) */}
+                <div
+                    className={`flex-1 md:flex-none md:max-w-lg transition-all duration-300 ${isSearchExpanded ? 'absolute inset-x-0 mx-4 md:static md:mx-auto' : 'hidden md:block'}`}
+                >
+                    <div className="relative flex items-center">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500 " />
+                        <Input
+                            type="text"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 bg-zinc-100 dark:bg-zinc-800 border-none focus:bg-white dark:focus:bg-zinc-950 "
+                            onBlur={() => setIsSearchExpanded(false)}
+                        />
+                        {isSearchExpanded && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsSearchExpanded(false)}
+                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 text-zinc-600 dark:text-zinc-400"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Right-side elements */}
                 <div className="flex items-center gap-4">
-                    <p>{user.email}</p>
-                    <StorageIndicator refreshTrigger={items.length} />
-                    <button onClick={signOut} className="px-4 py-2 font-bold text-white bg-red-500 rounded hover:bg-red-700">Sign Out</button>
+                   
+                    <div className="hidden sm:block">
+                        <StorageIndicator refreshTrigger={items.length} />
+                    </div>
+                    {/* User Profile Button */}
+                    <Link href={"/profile"}>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 border">
+                            <User2 className="h-5 w-5" />
+                        </Button>
+                    </Link>
                 </div>
             </header>
 
             <main className="p-8">
-                <div className="flex justify-between items-center mb-6">
-                    <nav className="flex items-center text-sm font-medium">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    {/* Breadcrumbs Section */}
+                    <nav className="flex items-center text-sm font-medium overflow-x-auto whitespace-nowrap">
                         {breadcrumbs.map((crumb, index) => (
                             <div key={crumb.id || 'root'} className="flex items-center">
-                                {index > 0 && <span className="mx-2 text-gray-400">/</span>}
+                                {index > 0 && <span className="mx-2 text-zinc-400 dark:text-zinc-600">/</span>}
                                 <button
                                     onClick={() => handleBreadcrumbClick(index)}
-                                    className={`hover:underline ${index === breadcrumbs.length - 1 ? 'text-gray-800 font-semibold' : 'text-blue-600'}`}
+                                    className={`hover:underline transition-colors ${index === breadcrumbs.length - 1 ? 'text-zinc-800 font-semibold dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-400'}`}
                                 >
                                     {crumb.name}
                                 </button>
                             </div>
                         ))}
                     </nav>
-                    <div className="flex gap-4">
-                        <Link href="/shared" className="text-blue-600 hover:underline">
-                            Shared with me
-                        </Link>
-                        <Link href="/trash" className="text-gray-600 hover:underline">
-                            Trash
-                        </Link>
-                        <button onClick={handleCreateFolder} className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">+ Create Folder</button>
-                        <button onClick={handleUploadClick} disabled={isUploading} className="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 disabled:bg-gray-400">
-                            {isUploading ? 'Uploading...' : '↑ Upload File'}
-                        </button>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                        <Button asChild variant="ghost" className='cursor-pointer'>
+                            <Link href="/shared" className="flex items-center gap-2">
+                                <Share2 className="h-4 w-4" />
+                                <span className="hidden sm:inline">Shared with me</span>
+                            </Link>
+                        </Button>
+                        <Button asChild variant="ghost" className='cursor-pointer'>
+                            <Link href="/trash" className="flex items-center gap-2">
+                                <Trash2 className="h-4 w-4" />
+                                <span className="hidden sm:inline">Trash</span>
+                            </Link>
+                        </Button>
+                        <Button onClick={handleCreateFolder} variant="outline" className='cursor-pointer flex items-center gap-2'>
+                            <FolderPlus className="h-4 w-4" />
+                            <span className="hidden sm:inline">Create Folder</span>
+                        </Button>
+                        <Button onClick={handleUploadClick} disabled={isUploading} variant="outline" className='cursor-pointer flex items-center gap-2'>
+                            {isUploading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span className="hidden sm:inline">Uploading...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <UploadCloud className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Upload File</span>
+                                </>
+                            )}
+                        </Button>
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                     </div>
                 </div>
 
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-8 gap-4">
                     {isLoading ? <p>Loading...</p> : (searchQuery && searchResults !== null) ? (
-                        // This part renders the search results
+
                         searchResults.length > 0 ? (
                             searchResults.map((item) => (
                                 <div
@@ -391,14 +462,14 @@ export default function Home() {
                             ))
                         ) : (<p>No files found matching your search.</p>)
                     ) : (
-                        // This part renders the regular folder content
+
                         items.length > 0 ? (
                             items.map((item) => (
                                 <div
                                     key={item.id}
                                     onClick={() => handleItemClick(item)}
                                     onContextMenu={(e) => handleContextMenu(e, item)}
-                                    className="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow cursor-pointer hover:bg-blue-50"
+                                    className="flex flex-col items-center justify-center p-8  bg-white  border cursor-pointer hover:bg-blue-50 rounded-xl"
                                 >
                                     {getFileIcon(item)}
                                     <span className="text-sm text-center truncate w-full">{item.name}</span>
@@ -460,6 +531,8 @@ export default function Home() {
                         </div>
                     </div>
                 )}
+
+
 
                 <Dropzone currentFolderId={currentFolderId} onUploadComplete={refreshItems}>
                     {/* This is the new styled dropzone area */}
