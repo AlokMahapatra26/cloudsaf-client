@@ -15,6 +15,8 @@ export default function Dropzone({ children, currentFolderId, onUploadComplete }
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (!session) return;
+
+        console.log('--- onDrop function was triggered! ---', new Date().toLocaleTimeString()); 
         
         const uploadPromises = acceptedFiles.map(async (file) => {
             const formData = new FormData();
@@ -25,7 +27,7 @@ export default function Dropzone({ children, currentFolderId, onUploadComplete }
 
             try {
                 
-                const response = await fetch('http://localhost:8000/api/files/upload', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${session.access_token}` },
                     body: formData,

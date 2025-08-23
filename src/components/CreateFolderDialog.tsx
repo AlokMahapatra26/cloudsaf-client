@@ -13,35 +13,35 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from '@/components/ui/input';
 
-interface RenameDialogProps {
+interface CreateFolderDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (newName: string) => void;
-    currentName: string;
+    onConfirm: (folderName: string) => void;
 }
 
-export default function RenameDialog({ isOpen, onClose, onConfirm, currentName }: RenameDialogProps) {
-    const [newName, setNewName] = useState(currentName);
+export default function CreateFolderDialog({ isOpen, onClose, onConfirm }: CreateFolderDialogProps) {
+    const [folderName, setFolderName] = useState('');
 
     const handleConfirm = () => {
-        if (newName && newName !== currentName) {
-            onConfirm(newName);
+        if (folderName) {
+            onConfirm(folderName);
         }
+        setFolderName('');
     };
 
     return (
         <AlertDialog open={isOpen} onOpenChange={onClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Rename "{currentName}"</AlertDialogTitle>
+                    <AlertDialogTitle>Create New Folder</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Enter a new name for the file or folder.
+                        Enter a name for your new folder.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                <Input value={folderName} onChange={(e) => setFolderName(e.target.value)} />
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirm}>Rename</AlertDialogAction>
+                    <AlertDialogAction onClick={handleConfirm}>Create</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

@@ -32,8 +32,8 @@ export default function MoveModal({ itemToMove, onClose, onMoveConfirm }: MoveMo
     const fetchFolders = async (folderId: string | null) => {
         if (!session) return;
         const url = folderId
-            ? `http://localhost:8000/api/files?parentId=${folderId}`
-            : 'http://localhost:8000/api/files';
+            ? `${process.env.NEXT_PUBLIC_API_URL}/api/files?parentId=${folderId}`
+            : `${process.env.NEXT_PUBLIC_API_URL}/api/files`;
         
         try {
             const response = await fetch(url, { headers: { 'Authorization': `Bearer ${session.access_token}` } });

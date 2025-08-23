@@ -32,7 +32,7 @@ export default function StorageIndicator({ refreshTrigger }: StorageIndicatorPro
         if (!session) return;
         const fetchStorage = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/user/storage', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/storage`, {
                     headers: { 'Authorization': `Bearer ${session.access_token}` },
                 });
                 const data = await response.json();

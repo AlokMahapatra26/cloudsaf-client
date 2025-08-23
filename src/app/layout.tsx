@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${assistantFont.className} antialiased`}
+        className={`${assistantFont.className} antialiased mx-2 md:mx-8 lg:mx-16`}
       >
         <ThemeProvider
           attribute="class"

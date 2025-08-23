@@ -13,19 +13,19 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from '@/components/ui/input';
 
-interface RenameDialogProps {
+interface ShareDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (newName: string) => void;
-    currentName: string;
+    onConfirm: (email: string) => void;
+    itemName: string;
 }
 
-export default function RenameDialog({ isOpen, onClose, onConfirm, currentName }: RenameDialogProps) {
-    const [newName, setNewName] = useState(currentName);
+export default function ShareDialog({ isOpen, onClose, onConfirm, itemName }: ShareDialogProps) {
+    const [email, setEmail] = useState('');
 
     const handleConfirm = () => {
-        if (newName && newName !== currentName) {
-            onConfirm(newName);
+        if (email) {
+            onConfirm(email);
         }
     };
 
@@ -33,15 +33,15 @@ export default function RenameDialog({ isOpen, onClose, onConfirm, currentName }
         <AlertDialog open={isOpen} onOpenChange={onClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Rename "{currentName}"</AlertDialogTitle>
+                    <AlertDialogTitle>Share "{itemName}"</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Enter a new name for the file or folder.
+                        Enter the email of the user you want to share with.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                <Input type="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirm}>Rename</AlertDialogAction>
+                    <AlertDialogAction onClick={handleConfirm}>Share</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
