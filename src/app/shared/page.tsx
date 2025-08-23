@@ -25,7 +25,7 @@ export default function SharedWithMe() {
         if (!session) return;
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/files/shared-with-me', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/shared-with-me`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });
             if (!response.ok) throw new Error('Failed to fetch shared items');
@@ -53,7 +53,7 @@ export default function SharedWithMe() {
         if (!contextMenu.item || !session || contextMenu.item.type !== 'file') return;
         
         try {
-            const response = await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/download`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${contextMenu.item.id}/download`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });
             const data = await response.json();
@@ -79,7 +79,7 @@ export default function SharedWithMe() {
         if (!confirmRemove) return;
         
         try {
-            const response = await fetch(`http://localhost:8000/api/shares/${contextMenu.item.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${contextMenu.item.id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });

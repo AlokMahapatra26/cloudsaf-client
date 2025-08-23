@@ -33,7 +33,7 @@ export default function TrashPage() {
         if (!session) return;
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/files/trashed', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/trashed`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });
             if (!response.ok) throw new Error('Failed to fetch trashed items');
@@ -54,7 +54,7 @@ export default function TrashPage() {
 
     const handleRestore = async () => {
         if (!contextMenu.item) return;
-        await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/restore`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${contextMenu.item.id}/restore`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${session?.access_token}` },
         });
@@ -66,7 +66,7 @@ export default function TrashPage() {
         const confirmDelete = window.confirm("This action is permanent and cannot be undone. Are you sure?");
         if (!confirmDelete) return;
         
-        await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/permanent`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${contextMenu.item.id}/permanent`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${session?.access_token}` },
         });

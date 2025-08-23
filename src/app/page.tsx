@@ -58,7 +58,7 @@ export default function Home() {
 
         const fetchSearchResults = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/files/search?query=${searchQuery}`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/search?query=${searchQuery}`, {
                     headers: { 'Authorization': `Bearer ${session.access_token}` },
                 });
                 if (!response.ok) throw new Error('Failed to fetch search results');
@@ -78,8 +78,6 @@ export default function Home() {
         return () => clearTimeout(timer);
     }, [searchQuery, session]);
 
-
-
     const handleMoveClick = () => {
         if (!contextMenu.item) return;
         setItemToMove(contextMenu.item);
@@ -91,7 +89,7 @@ export default function Home() {
         if (!itemToMove || !session) return;
 
         try {
-            await fetch(`http://localhost:8000/api/files/${itemToMove.id}/move`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${itemToMove.id}/move`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                 body: JSON.stringify({ destinationFolderId }),
@@ -107,7 +105,6 @@ export default function Home() {
         }
     };
 
-
     useEffect(() => {
         if (!viewingItem || !session) return;
 
@@ -115,7 +112,7 @@ export default function Home() {
             setIsViewerLoading(true);
             setViewingItemUrl(null);
             try {
-                const response = await fetch(`http://localhost:8000/api/files/${viewingItem.id}/download`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${viewingItem.id}/download`, {
                     headers: { 'Authorization': `Bearer ${session.access_token}` },
                 });
                 const data = await response.json();
@@ -136,7 +133,7 @@ export default function Home() {
     const fetchItems = async (folderId: string | null) => {
         if (!session) return;
         setIsLoading(true);
-        const url = folderId ? `http://localhost:8000/api/files?parentId=${folderId}` : 'http://localhost:8000/api/files';
+        const url = folderId ? `${process.env.NEXT_PUBLIC_API_URL}/api/files?parentId=${folderId}` : `${process.env.NEXT_PUBLIC_API_URL}/api/files`;
         try {
             const response = await fetch(url, { headers: { 'Authorization': `Bearer ${session.access_token}` } });
             if (!response.ok) throw new Error('Failed to fetch items');
@@ -162,7 +159,7 @@ export default function Home() {
         if (!folderName) return;
 
         try {
-            await fetch('http://localhost:8000/api/files/folder', {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/folder`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                 body: JSON.stringify({ name: folderName, parent_id: currentFolderId }),
@@ -184,7 +181,7 @@ export default function Home() {
 
         setIsUploading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/files/upload', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
                 body: formData,
@@ -232,7 +229,7 @@ export default function Home() {
         if (!email) return;
 
         try {
-            const response = await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/share`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${contextMenu.item.id}/share`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                 body: JSON.stringify({ email }),
@@ -255,7 +252,7 @@ export default function Home() {
         if (!confirmDelete) return;
 
         try {
-            await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${contextMenu.item.id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });
@@ -271,7 +268,7 @@ export default function Home() {
         if (!newName || newName === contextMenu.item.name) return;
 
         try {
-            await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/rename`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${contextMenu.item.id}/rename`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                 body: JSON.stringify({ newName }),
@@ -286,7 +283,7 @@ export default function Home() {
         if (!contextMenu.item || !session || contextMenu.item.type !== 'file') return;
 
         try {
-            const response = await fetch(`http://localhost:8000/api/files/${contextMenu.item.id}/download`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${contextMenu.item.id}/download`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });
             const data = await response.json();

@@ -14,7 +14,7 @@ export default function SignUp() {
         e.preventDefault();
         setError(null);
 
-        const response = await fetch('http://localhost:8000/api/auth/signup', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -52,7 +52,7 @@ export default function SignUp() {
 
                 <button
                     type="submit"
-                    className=" w-full p-3  bg-blue-600 cursor-pointer rounded-lg  transition duration-200"
+                    className=" w-full p-3 text-white bg-blue-600 cursor-pointer rounded-lg  transition duration-200"
                 >
                     Sign Up
                 </button>

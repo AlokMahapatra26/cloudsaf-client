@@ -15,7 +15,7 @@ export default function SignIn() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const res = await fetch('http://localhost:8000/api/auth/signin', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -60,7 +60,7 @@ export default function SignIn() {
 
                 <button
                     type="submit"
-                    className="w-full p-3 bg-blue-600 border cursor-pointer rounded-lg  transition duration-200"
+                    className="w-full p-3 bg-blue-600 text-white border cursor-pointer rounded-lg  transition duration-200"
                 >
                     Sign In
                 </button>
