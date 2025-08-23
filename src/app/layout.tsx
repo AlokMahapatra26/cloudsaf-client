@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
 
 const assistantFont = Poppins({
   weight: ['400', '500', '600', '700'],
@@ -32,6 +33,7 @@ export default function RootLayout({
         >
           <AuthProvider>
             {children}
+      <Toaster position="top-right" richColors/>
             <Footer />
           </AuthProvider>
         </ThemeProvider>

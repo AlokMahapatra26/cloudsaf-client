@@ -4,8 +4,20 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getFileIcon , DriveItem} from '@/lib/utils';
+import { toast } from 'sonner';
 
-// Interface for the context menu state
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+
 interface ContextMenu {
     visible: boolean;
     x: number;
@@ -13,26 +25,28 @@ interface ContextMenu {
     item: DriveItem | null;
 }
 
-
-
 export default function SharedWithMe() {
     const { session } = useAuth();
     const [items, setItems] = useState<DriveItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [contextMenu, setContextMenu] = useState<ContextMenu>({ visible: false, x: 0, y: 0, item: null });
+   
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
 
     const fetchSharedItems = async () => {
         if (!session) return;
         setIsLoading(true);
         try {
+            
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/shared-with-me`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });
             if (!response.ok) throw new Error('Failed to fetch shared items');
             const data = await response.json();
             setItems(data);
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+           
+            toast.error(error.message);
         } finally {
             setIsLoading(false);
         }
@@ -53,7 +67,7 @@ export default function SharedWithMe() {
         if (!contextMenu.item || !session || contextMenu.item.type !== 'file') return;
         
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${contextMenu.item.id}/download`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${contextMenu.item.id}/download`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });
             const data = await response.json();
@@ -65,36 +79,35 @@ export default function SharedWithMe() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        } catch (error) { 
-            console.error(error); 
-            alert('Failed to download file.'); 
+            toast.success("File downloaded successfully");
+        } catch (error: any) { 
+            
+            toast.error(error.message);
         } finally {
             setContextMenu({ visible: false, x: 0, y: 0, item: null });
         }
     };
 
-    const handleRemove = async () => {
+  
+    const handleRemoveConfirm = async () => {
         if (!contextMenu.item || !session) return;
-        const confirmRemove = window.confirm(`Are you sure you want to remove "${contextMenu.item.name}" from your shared files?`);
-        if (!confirmRemove) return;
         
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/${contextMenu.item.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shares/${contextMenu.item.id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${session.access_token}` },
             });
             if (!response.ok) throw new Error('Failed to remove share');
             
-            // Refresh the list to show the item has been removed
             await fetchSharedItems();
-        } catch (error) {
-            console.error("Failed to remove share:", error);
-            alert("Failed to remove share.");
+            toast.success("Item removed successfully");
+        } catch (error: any) {
+          
+            toast.error(error.message);
         } finally {
             setContextMenu({ visible: false, x: 0, y: 0, item: null });
         }
     };
-
 
     return (
         <div className="p-8" onClick={() => setContextMenu({ ...contextMenu, visible: false })}>
@@ -107,7 +120,7 @@ export default function SharedWithMe() {
                         <div 
                             key={item.id} 
                             onContextMenu={(e) => handleContextMenu(e, item)}
-                            className="flex flex-col items-center justify-center p-4  rounded-lg shadow cursor-context-menu"
+                            className="flex flex-col items-center justify-center p-4 rounded-lg shadow cursor-context-menu"
                         >
                             {getFileIcon(item)}
                             <span className="text-sm text-center truncate w-full">{item.name}</span>
@@ -120,25 +133,37 @@ export default function SharedWithMe() {
             <Link href="/" className="text-blue-600 hover:underline mt-8 inline-block">
                 &larr; Back to My Drive
             </Link>
-
             
             {contextMenu.visible && (
-                <div
-                    style={{ top: contextMenu.y, left: contextMenu.x }}
-                    className="absolute  border rounded shadow-lg z-10"
-                >
-                    <ul className="">
+                <div style={{ top: contextMenu.y, left: contextMenu.x }} className="absolute border rounded shadow-lg z-10">
+                    <ul>
                         {contextMenu.item?.type === 'file' && (
-                            <li onClick={handleDownload} className="px-4 py-2  cursor-pointer bg-card hover:bg-accent">
+                            <li onClick={handleDownload} className="px-4 py-2 cursor-pointer bg-card hover:bg-accent">
                                 Download
                             </li>
                         )}
-                        <li onClick={handleRemove} className="px-4 py-2  text-red-600 cursor-pointer bg-card hover:bg-accent">
+                      
+                        <li onClick={() => setIsAlertOpen(true)} className="px-4 py-2 text-red-600 cursor-pointer bg-card hover:bg-accent">
                             Remove
                         </li>
                     </ul>
                 </div>
             )}
+
+            <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will remove "{contextMenu.item?.name}" from your shared files. The owner will still have access to it.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleRemoveConfirm}>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
