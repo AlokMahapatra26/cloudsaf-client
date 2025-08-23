@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { redirect } from 'next/navigation';
 import PasswordInput from '@/components/PasswordInput';
+import { AnimatedGridPattern } from '@/components/magicui/animated-grid-pattern';
+import { cn } from '@/lib/utils';
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
@@ -40,7 +42,7 @@ export default function SignIn() {
         <div className="flex items-center justify-center min-h-screen ">
             <form
                 onSubmit={handleSubmit}
-                className="p-8  rounded-2xl  w-96 border"
+                className="p-8  rounded-2xl  w-96 "
             >
                 <h2 className="text-2xl font-semibold mb-6 text-center ">
                     Sign In
@@ -81,6 +83,14 @@ export default function SignIn() {
                     <p className="mt-4 text-sm text-center text-red-500">{error}</p>
                 )}
             </form>
+            <AnimatedGridPattern width={40} height={40}  numSquares={30}
+                                maxOpacity={0.1}
+                                duration={3}
+                                repeatDelay={1}
+                                className={cn(
+                                  "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
+                                  "inset-x-0 inset-y-[-30%] h-[100%] skew-y-12",
+                                )}/>
         </div>
 
 

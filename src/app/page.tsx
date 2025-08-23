@@ -9,7 +9,7 @@ import StorageIndicator from '@/components/StorageIndicator';
 import RenameDialog from '@/components/RenameDialog';
 import ShareDialog from '@/components/ShareDialog';
 import CreateFolderDialog from '@/components/CreateFolderDialog';
-import { getFileIcon, DriveItem } from '@/lib/utils';
+import { getFileIcon, DriveItem, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { FolderPlus, Loader2, Search, Share2, Trash2, UploadCloud, User2, X, MoreVertical, Move, Download, FilePenLine } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -438,7 +438,7 @@ export default function Home() {
                                 {index > 0 && <span className="mx-2 text-zinc-400 dark:text-zinc-600">/</span>}
                                 <button
                                     onClick={() => handleBreadcrumbClick(index)}
-                                    className={`hover:underline transition-colors ${index === breadcrumbs.length - 1 ? 'text-zinc-800 font-semibold dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-400'}`}
+                                    className={`hover:bg-accent rounded p-0.5 cursor-pointer transition-colors ${index === breadcrumbs.length - 1 ? 'text-zinc-800 font-semibold dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-400'}`}
                                 >
                                     {crumb.name}
                                 </button>
@@ -474,7 +474,7 @@ export default function Home() {
                 </div>
 
                 {/* Grid display for files and folders with the new options icon */}
-                <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-8 gap-4 ">
                     {isLoading ? (
                         <p>Loading...</p>
                     ) : (searchQuery && searchResults !== null) ? (
@@ -484,14 +484,14 @@ export default function Home() {
                                 <div
                                     key={item.id}
                                     onClick={() => handleItemClick(item)}
-                                    className="relative group flex flex-col items-center justify-center p-4 border cursor-pointer hover:bg-accent rounded-xl"
+                                    className="relative group flex flex-col items-center justify-center p-4 border cursor-pointer hover:bg-accent rounded-xl "
                                 >
                                     {/* Options Icon Button */}
                                     <button
                                         onClick={(e) => handleOptionsClick(e, item)}
-                                        className="absolute top-2 right-2 p-1 rounded-full hover:bg-card z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-2 right-2 p-1 rounded-full hover:bg-card z-20 opacity-0 group-hover:opacity-100 transition-opacity "
                                     >
-                                        <MoreVertical className="h-5 w-5" />
+                                        <MoreVertical className="h-5 w-5 " />
                                     </button>
 
                                     {/* Item Icon and Name */}
@@ -502,9 +502,9 @@ export default function Home() {
                                     {openMenuId === item.id && (
                                         <div
                                             onClick={(e) => e.stopPropagation()}
-                                            className="absolute top-10 right-2 w-40 bg-background border rounded shadow-lg z-10"
+                                            className="absolute top-10 right-2 w-40 bg-background border rounded shadow-lg z-10 "
                                         >
-                                            <ul className="py-1">
+                                            <ul className="py-1 ">
                                                 <li onClick={() => { setItemToMove(item); setIsMoveModalOpen(true); setOpenMenuId(null); }} className="px-4 py-2 cursor-pointer hover:bg-secondary flex items-center gap-2">
                                                     <Move className="h-4 w-4" /> Move
                                                 </li>
@@ -537,7 +537,7 @@ export default function Home() {
                                 <div
                                     key={item.id}
                                     onClick={() => handleItemClick(item)}
-                                    className="relative group flex flex-col items-center justify-center p-4 border cursor-pointer hover:bg-accent rounded-xl"
+                                    className="relative group flex flex-col items-center justify-center p-8 border cursor-pointer hover:bg-accent rounded-xl "
                                 >
                                     <button
                                         onClick={(e) => handleOptionsClick(e, item)}
@@ -578,7 +578,7 @@ export default function Home() {
                                 </div>
                             ))
                         ) : (
-                            <p>This folder is empty.</p>
+                            <span></span>
                         )
                     )}
                 </div>
@@ -653,6 +653,8 @@ export default function Home() {
                         </AlertDialog>
                     </>
                 )}
+
+                 
                 <CreateFolderDialog
                     isOpen={isCreateFolderDialogOpen}
                     onClose={() => setIsCreateFolderDialogOpen(false)}

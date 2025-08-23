@@ -32,14 +32,12 @@ const PricingPage = () => {
                             <Separator className="my-4 bg-zinc-200 dark:bg-zinc-700" />
                             <ul className="list-none space-y-2 text-left">
                                 <li className="flex items-center text-zinc-700 dark:text-zinc-300">
-                                    <Check className="h-4 w-4 text-green-500 mr-2" /> 10 MB Storage
+                                    <Check className="h-4 w-4 text-green-500 mr-2" /> 20 MB Storage
                                 </li>
                                 <li className="flex items-center text-zinc-700 dark:text-zinc-300">
                                     <Check className="h-4 w-4 text-green-500 mr-2" /> Unlimited access
                                 </li>
-                                <li className="flex items-center text-zinc-400 dark:text-zinc-500">
-                                    <X className="h-4 w-4 text-red-500 mr-2" /> Priority support
-                                </li>
+                               
                             </ul>
                         </CardContent>
                         <CardFooter>
@@ -55,20 +53,18 @@ const PricingPage = () => {
                         </CardHeader>
                         <CardContent className="text-center">
                             <h3 className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
-                                ₹9
+                                ₹29
                                 <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400 ml-1">/ month</span>
                             </h3>
                             <Separator className="my-4 bg-zinc-200 dark:bg-zinc-700" />
                             <ul className="list-none space-y-2 text-left">
                                 <li className="flex items-center text-zinc-700 dark:text-zinc-300">
-                                    <Check className="h-4 w-4 text-green-500 mr-2" /> 50 MB Storage
+                                    <Check className="h-4 w-4 text-green-500 mr-2" /> 200 MB Storage
                                 </li>
                                 <li className="flex items-center text-zinc-700 dark:text-zinc-300">
                                     <Check className="h-4 w-4 text-green-500 mr-2" /> Unlimited access
                                 </li>
-                                <li className="flex items-center text-zinc-700 dark:text-zinc-300">
-                                    <Check className="h-4 w-4 text-green-500 mr-2" /> Priority support
-                                </li>
+                                
                             </ul>
                         </CardContent>
                         <CardFooter>
