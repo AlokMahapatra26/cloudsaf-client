@@ -36,7 +36,7 @@ interface Breadcrumb {
 
 export default function Home() {
     // Authentication hook to get user, session, and sign-out function
-    const { user, session, signOut } = useAuth();
+    const { user, session} = useAuth();
 
     // State variables to manage UI and data
     const [items, setItems] = useState<DriveItem[]>([]);
